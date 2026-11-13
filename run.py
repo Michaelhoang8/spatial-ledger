@@ -71,7 +71,7 @@ class Handler(BaseHTTPRequestHandler):
             self.reply(404, {'error': str(error)})
         except Conflict as error:
             self.reply(409, {'error': str(error)})
-        except (ValueError,UnicodeDecodeError) as error:
+        except (ValueError,UnicodeDecodeError,RecursionError) as error:
             self.reply(400, {'error': str(error)})
         except sqlite3.OperationalError:
             self.reply(503, {'error': 'Database temporarily unavailable. Retry shortly.'})

@@ -159,3 +159,10 @@ class APITests(unittest.TestCase):
         for path in ['/data/points.sqlite3','/.git/config','/spatial.py']:
             self.assertEqual(self.request('GET',path)[0],404)
         self.assertEqual(self.request('PUT','/api/points',{})[0],405)
+
+    def test_static_assets_and_head_are_served_without_source_exposure(self):
+        for path in ['/', '/app.js', '/style.css']:
+            status, body = self.request('GET', path)
+            self.assertEqual(status, 200)
+            self.assertTrue(body)
+        self.assertEqual(self.request('HEAD', '/'), (200, b''))
