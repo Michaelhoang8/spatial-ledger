@@ -8,153 +8,136 @@
   </head>
   <body>
     <header>
-      <a href="#" class="brand">spatial / ledger</a><span>FIELD OPERATIONS · GEOSPATIAL INDEX</span
-      ><button id="refresh">Refresh records</button>
+      <h1>Spatial Ledger</h1>
+      <button id="samples" data-write>Load sample stations</button
+      ><button id="refresh">Refresh</button><button id="records-open">Point records</button>
     </header>
     <main>
-      <div class="intro">
-        <div>
-          <p class="eyebrow">A PLACE FOR EVERY POINT.</p>
-          <h1>Near is a precise question.</h1>
+      <div class="search-bar">
+        <label
+          >Preset<select id="preset">
+            <option value="europe">European stations</option>
+            <option value="date">Across the date line</option>
+            <option value="pole">North polar relays</option>
+            <option value="world">Whole globe</option>
+          </select></label
+        >
+        <div class="pair">
+          <label
+            >Latitude<input
+              id="lat"
+              type="number"
+              min="-90"
+              max="90"
+              step="any"
+              value="51" /></label
+          ><label
+            >Longitude<input id="lon" type="number" min="-180" max="180" step="any" value="0"
+          /></label>
         </div>
-        <p>Keep a local location ledger.<br />Search across borders, poles, and the date line.</p>
+        <label
+          >Radius / km<input
+            id="radius"
+            type="number"
+            min="0"
+            max="20100"
+            step="any"
+            value="400" /></label
+        ><button id="search" class="primary">Search</button>
       </div>
       <div class="workspace">
         <section class="map-panel">
-          <div class="panel-head">
-            <h2>Coordinate canvas</h2>
-            <span>EQUIRECTANGULAR · CLICK TO SET CENTER</span>
+          <div class="map-title">
+            <h2>Longitude / latitude</h2>
+            <span>Click to set the search center</span>
           </div>
-          <svg
-            id="map"
-            viewBox="0 0 1000 500"
-            role="group"
-            aria-label="Longitude and latitude point map"
-          ></svg>
+          <div class="map-scroll">
+            <svg
+              id="map"
+              viewBox="0 0 1000 500"
+              role="group"
+              aria-label="Longitude and latitude point map"
+            ></svg>
+          </div>
           <div class="map-key">
-            <span>● active point</span><span class="match-key">● radius match</span
-            ><span>▧ index candidate bounds</span><span>＋ search center</span>
+            <span>● Active point</span><span class="match-key">● Radius match</span
+            ><span>▧ Candidate bounds</span><span>＋ Center</span>
           </div>
           <div id="metrics" class="metrics"></div>
-          <p id="model" class="hint"></p>
+          <details>
+            <summary>Distance model</summary>
+            <p id="model" class="hint"></p>
+            <p class="hint">
+              Candidate rectangles narrow the index scan. Final membership uses great-circle
+              distance. This is an equirectangular coordinate plot.
+            </p>
+          </details>
         </section>
-        <aside>
-          <h2>Search a radius</h2>
-          <label
-            >Preset<select id="preset">
-              <option value="europe">European stations</option>
-              <option value="date">Across the date line</option>
-              <option value="pole">North polar relays</option>
-              <option value="world">Whole globe</option>
-            </select></label
-          >
+        <aside class="results">
+          <div class="section-head">
+            <h2>Matches</h2>
+            <button id="export-results" disabled>Export JSON</button>
+          </div>
+          <div id="matches"></div>
+          <p id="match-count" class="hint"></p>
+        </aside>
+      </div>
+      <p id="status" role="status" aria-live="polite"></p>
+    </main>
+    <dialog id="records-panel" aria-labelledby="records-title">
+      <div class="section-head">
+        <h2 id="records-title">Point records</h2>
+        <button id="records-close">Close</button>
+      </div>
+      <div class="management">
+        <section>
+          <div class="section-head">
+            <h2>Point records</h2>
+            <label><input id="archived" type="checkbox" /> Include archived</label>
+          </div>
+          <label>Filter names<input id="filter" type="search" placeholder="Find a record" /></label>
+          <div class="record-list" id="records"></div>
+          <p id="record-count" class="hint"></p>
+          <div class="pair">
+            <label class="file"
+              >Import points JSON<input id="import" type="file" accept=".json" /></label
+            ><button id="export-points">Export active points</button>
+          </div>
+        </section>
+        <section class="editor">
+          <h2 id="edit-title">Add a location</h2>
+          <label>Name<input id="name" maxlength="80" type="text" /></label>
           <div class="pair">
             <label
               >Latitude<input
-                id="lat"
+                id="point-lat"
                 type="number"
                 min="-90"
                 max="90"
                 step="any"
-                value="51" /></label
+                value="0" /></label
             ><label
-              >Longitude<input id="lon" type="number" min="-180" max="180" step="any" value="0"
+              >Longitude<input
+                id="point-lon"
+                type="number"
+                min="-180"
+                max="180"
+                step="any"
+                value="0"
             /></label>
           </div>
-          <label
-            >Radius / km<input
-              id="radius"
-              type="number"
-              min="0"
-              max="20100"
-              step="any"
-              value="400" /></label
-          ><button id="search" class="primary">Search nearby →</button>
+          <div class="pair">
+            <button id="save" data-write class="primary">Add point</button
+            ><button id="cancel">New point</button>
+          </div>
           <p class="hint">
-            Candidate rectangles narrow the index scan. Final membership uses great-circle distance.
+            Edits use record versions to prevent overwriting a newer change. Archiving preserves the
+            record and removes it from searches.
           </p>
-          <button id="samples" data-write>Load fictional sample stations</button>
-        </aside>
+        </section>
       </div>
-      <p id="status" role="status" aria-live="polite"></p>
-      <section>
-        <div class="section-head">
-          <h2>Within reach</h2>
-          <button id="export-results" disabled>Export search JSON</button>
-        </div>
-        <div class="table-scroll">
-          <table>
-            <thead>
-              <tr>
-                <th>Location</th>
-                <th>Latitude</th>
-                <th>Longitude</th>
-                <th>Distance / km</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody id="matches"></tbody>
-          </table>
-        </div>
-        <p id="match-count" class="hint"></p>
-      </section>
-      <details id="records-panel">
-        <summary>Manage the ledger</summary>
-        <div class="management">
-          <section>
-            <div class="section-head">
-              <h2>Point records</h2>
-              <label><input id="archived" type="checkbox" /> Include archived</label>
-            </div>
-            <label
-              >Filter names<input id="filter" type="search" placeholder="Find a record"
-            /></label>
-            <div class="record-list" id="records"></div>
-            <p id="record-count" class="hint"></p>
-            <div class="pair">
-              <label class="file"
-                >Import points JSON<input id="import" type="file" accept=".json" /></label
-              ><button id="export-points">Export active points</button>
-            </div>
-          </section>
-          <section class="editor">
-            <h2 id="edit-title">Add a location</h2>
-            <label>Name<input id="name" maxlength="80" type="text" /></label>
-            <div class="pair">
-              <label
-                >Latitude<input
-                  id="point-lat"
-                  type="number"
-                  min="-90"
-                  max="90"
-                  step="any"
-                  value="0" /></label
-              ><label
-                >Longitude<input
-                  id="point-lon"
-                  type="number"
-                  min="-180"
-                  max="180"
-                  step="any"
-                  value="0"
-              /></label>
-            </div>
-            <div class="pair">
-              <button id="save" data-write class="primary">Add point</button
-              ><button id="cancel">New point</button>
-            </div>
-            <p class="hint">
-              Edits use record versions to prevent overwriting a newer change. Archiving preserves
-              the record and removes it from searches.
-            </p>
-          </section>
-        </div>
-      </details>
-      <footer>
-        <span>SQLite R*Tree + exact spherical refinement</span
-        ><span>LOCAL DATA / NO MAP PROVIDER / NO ACCOUNT</span>
-      </footer>
-    </main>
+      <p id="records-status" role="status"></p>
+    </dialog>
     <script src="app.js" defer></script>
   </body>
 </html>

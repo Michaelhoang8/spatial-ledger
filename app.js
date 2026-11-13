@@ -18,6 +18,7 @@ function svg(tag, attrs, text) {
 }
 function status(text) {
   $('status').textContent = text;
+  $('records-status').textContent = text;
 }
 function numeric(id) {
   if (!$(id).value.trim()) throw Error('Fill every coordinate and radius field.');
@@ -140,19 +141,16 @@ function renderResult() {
   }
   $('model').textContent = result.model;
   for (const point of result.matches.slice(0, 100)) {
-    const row = el('tr');
-    for (const value of [
-      point.name,
-      point.latitude.toFixed(4),
-      point.longitude.toFixed(4),
-      point.distance_km.toFixed(3),
-    ])
-      row.append(el('td', value));
-    const cell = el('td'),
-      button = el('button', 'Edit');
+    const row = el('article');
+    row.className = 'match';
+    const button = el('button', point.name);
     button.addEventListener('click', () => edit(point));
-    cell.append(button);
-    row.append(cell);
+    const distance = el('strong', `${point.distance_km.toFixed(3)} km`);
+    const coordinates = el(
+      'small',
+      `${point.latitude.toFixed(4)}°, ${point.longitude.toFixed(4)}°`,
+    );
+    row.append(button, distance, coordinates);
     $('matches').append(row);
   }
   $('match-count').textContent =
@@ -230,6 +228,7 @@ function records() {
   $('record-count').textContent =
     `Showing ${Math.min(100, visible.length)} of ${visible.length} matching records · ${points.length} total, including archived.`;
   $('samples').disabled = busy || points.length > 0;
+  $('samples').hidden = points.length > 0;
   $('export-points').disabled = !points.some((p) => p.active);
 }
 function edit(point) {
@@ -240,7 +239,8 @@ function edit(point) {
   $('point-lat').value = point.latitude;
   $('point-lon').value = point.longitude;
   $('save').textContent = 'Save changes';
-  $('records-panel').open = true;
+  if (!$('records-panel').open) $('records-panel').showModal();
+  $('name').focus();
 }
 function clearEditor() {
   editing = null;
@@ -305,6 +305,11 @@ $('samples').addEventListener('click', () =>
     await api('/api/points', samples);
   }),
 );
+$('records-open').addEventListener('click', () => {
+  $('records-status').textContent = '';
+  $('records-panel').showModal();
+});
+$('records-close').addEventListener('click', () => $('records-panel').close());
 $('search').addEventListener('click', search);
 for (const id of ['lat', 'lon', 'radius']) $(id).addEventListener('input', invalidateSearch);
 $('archived').addEventListener('change', records);

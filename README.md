@@ -14,6 +14,10 @@ python run.py
 
 Open http://127.0.0.1:8000. Optional flags: `--port 8001 --db /path/to/points.sqlite3`. The default database lives in `data/points.sqlite3`, which is ignored by Git. A fresh checkout starts empty; load the fictional sample stations from the UI.
 
+## Interface
+
+A compact search bar sits above the coordinate plot. Matching points appear in a distance-ordered column alongside it; select a location name or map point to open its editor. **Point records** opens the searchable ledger, import/export tools, and versioned record form. The distance-model explanation is expandable below the map.
+
 ## Workflows
 
 - Add or edit named latitude/longitude records. Edits include an expected record version; concurrent stale writes return HTTP 409 instead of silently overwriting changes.
